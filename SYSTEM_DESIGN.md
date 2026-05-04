@@ -1,19 +1,33 @@
 # Mazi Sales & Leads Analytics — System Design
 
-**Author:** CTO draft, v0.1
+**Author:** CTO draft, v0.2
 **Status:** Proposal — pending sign-off before implementation
 **Branch:** `claude/sales-analytics-system-design-afynv`
+
+**Changes from v0.1:** Scoped to single-user (SDR/sales rep). Google Calendar
+and Google Tasks promoted from v2 ideas to **core integrations alongside
+Sheets**. UI reframed around the rep's daily workflow (today view, follow-ups)
+instead of team management.
 
 ---
 
 ## 1. Goal
 
-Turn the user's Google Sheets of leads and sales data into a working operating
-system for sales: a single UI to (a) keep leads organized, (b) move them through
-a pipeline, and (c) see analytics that drive the next action — not vanity charts.
+You're an SDR running your pipeline today across **Google Sheets (leads),
+Google Calendar (meetings), and Google Tasks (follow-ups)**. Context-switching
+between three tools is the problem. Build one app that:
 
-**Non-goals (for v1):** replacing Google Sheets entirely, marketing automation,
-email sequencing, billing/invoicing, multi-tenant SaaS.
+1. **Consolidates** all three into a single source of truth.
+2. **Streamlines** the daily workflow: open the app → see exactly what to do
+   today → log it in two clicks → next.
+3. **Shows analytics** that change behavior (which sources convert, which
+   leads are rotting, where you spend your time).
+
+**Non-goals (for v1):** team/multi-user, email sending/sequencing, dialer,
+marketing automation, billing, multi-tenant SaaS, mobile native app.
+
+**Design principle:** every screen answers "what should I do *right now*?"
+If a screen doesn't, cut it.
 
 ---
 
@@ -54,12 +68,17 @@ These are the v1 dashboard. Everything else is v2.
 ## 3. High-level architecture
 
 ```
+ ┌──────────────────┐
+ │  Google Sheets   │──► leads (initial backfill + ongoing sync)
+ └──────────────────┘
  ┌──────────────────┐         ┌────────────────────────────────┐
- │  Google Sheets   │◄───────►│   Sync worker (Node, BullMQ)   │
- │  (source today)  │  OAuth  │   - pull on cron + on-demand   │
- └──────────────────┘         │   - push on user edit (v1.1)   │
-                              └──────────────┬─────────────────┘
-                                             │
+ │  Google Calendar │────────►│   Sync worker (Node, BullMQ)   │
+ │  (meetings)      │  OAuth  │   - cron poll (15 min)         │
+ └──────────────────┘         │   - on-demand "Sync now"       │
+ ┌──────────────────┐         │   - webhook (Calendar push)    │
+ │  Google Tasks    │────────►│   - two-way write (v1)         │
+ │  (follow-ups)    │         └──────────────┬─────────────────┘
+ └──────────────────┘                        │
                                              ▼
                               ┌────────────────────────────────┐
                               │   Postgres (canonical store)   │
@@ -68,8 +87,7 @@ These are the v1 dashboard. Everything else is v2.
                                              │
                               ┌──────────────┴─────────────────┐
                               │   Next.js app (UI + API)       │
-                              │   - tRPC/REST                  │
-                              │   - NextAuth (Google OAuth)    │
+                              │   - tRPC + NextAuth (Google)   │
                               └──────────────┬─────────────────┘
                                              │
                                              ▼
@@ -81,14 +99,16 @@ These are the v1 dashboard. Everything else is v2.
 
 **Why this shape:**
 
-- **Postgres as the canonical store, Sheets as the import surface.** Sheets API
-  has read quotas (~300 reads/min/project) and is too slow to query on every
-  page load. We pull into Postgres and serve all UI/analytics from there.
-- **Sync is one-way at MVP** (Sheets → app). Two-way sync is a foot-gun (merge
-  conflicts, accidental overwrites). We ship two-way in v1.1 once the schema
-  has settled and we have an audit log.
-- **Single Next.js app** for UI + API for v1. Split out a worker service when
-  job volume justifies it.
+- **Postgres is the canonical store; Google services are I/O surfaces.** Each
+  Google API has its own quotas and latency profile — we cache everything
+  locally and reconcile in the background.
+- **Two-way sync from v1 for Calendar and Tasks** (not Sheets). Why: Calendar
+  and Tasks have stable, well-defined schemas and official push notifications,
+  so writes are safe. Sheets is freeform and stays one-way until v1.1.
+- **One auth, three scopes.** A single Google OAuth grant covers Sheets,
+  Calendar, and Tasks — the user authorizes once.
+- **Single Next.js app** for UI + API. Worker runs in the same deployment via
+  a Vercel cron + a long-running BullMQ process on Render/Fly (~$5/mo).
 
 ---
 
@@ -106,7 +126,7 @@ These are the v1 dashboard. Everything else is v2.
 | ORM | **Prisma** or **Drizzle** | Drizzle if we want raw-SQL escape hatch for analytics |
 | Queue | **BullMQ** + Redis (Upstash) | Cron sync + retry on Sheets API failures |
 | Hosting | **Vercel** (app) + **Neon** (db) + **Upstash** (redis) | Zero-ops, generous free tiers |
-| Sheets I/O | **googleapis** Node SDK | Official, OAuth out of the box |
+| Sheets / Calendar / Tasks I/O | **googleapis** Node SDK | Official, single OAuth, all three APIs |
 
 **Estimated infra cost at MVP:** $0–$25/mo. Scales to ~$80/mo before we'd need
 to think about it.
