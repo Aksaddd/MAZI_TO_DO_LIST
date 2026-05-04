@@ -75,7 +75,7 @@
   }
   .num { font-variant-numeric: tabular-nums; }
   button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
-  input { font: inherit; }
+  input, textarea, select { font: inherit; }
   ::selection { background: var(--accent-soft); color: var(--accent); }
 
   /* ─────────  layout: sidebar + main  ───────── */
@@ -139,8 +139,13 @@
   .sync {
     display: flex; align-items: center; gap: 6px;
     color: var(--text-muted); font-size: 12px;
+    cursor: pointer;
   }
+  .sync:hover { color: var(--text-body); }
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .sync-dot.warn { background: var(--warn); }
+  .sync-dot.err  { background: var(--danger); }
+  .sync-dot.spin { background: var(--text-subtle); animation: pulse 0.9s var(--ease) infinite; }
   .avatar {
     width: 28px; height: 28px; border-radius: 50%;
     background: linear-gradient(135deg, #a78bfa, #60a5fa);
@@ -169,6 +174,7 @@
     background: var(--accent); border-color: var(--accent); color: white;
   }
   .btn-primary:hover { background: #15803d; border-color: #15803d; }
+  .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
 
   /* ─────────  section labels  ───────── */
   .section-label {
@@ -208,7 +214,7 @@
     margin: 0 0 4px; letter-spacing: -0.01em;
   }
   .hero-sub { color: var(--text-body); margin-bottom: 12px; }
-  .hero-tags { display: flex; gap: 16px; color: var(--text-muted); font-size: 13px; }
+  .hero-tags { display: flex; gap: 16px; color: var(--text-muted); font-size: 13px; flex-wrap: wrap; }
   .hero-tags span strong { color: var(--text-primary); font-weight: 500; }
   .hero-actions { display: flex; flex-direction: column; gap: 8px; min-width: 160px; }
 
@@ -224,6 +230,7 @@
     padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     transition: background 80ms;
+    cursor: pointer;
   }
   .row:last-child { border-bottom: none; }
   .row:hover { background: var(--bg-sunken); }
@@ -242,6 +249,7 @@
   .row-title { color: var(--text-primary); font-weight: 500; }
   .row-meta { color: var(--text-muted); font-size: 13px; }
   .row-time { color: var(--text-muted); font-size: 12px; min-width: 60px; text-align: right; }
+  .row-empty { padding: 24px 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
   .stage-dot {
     display: inline-block; width: 8px; height: 8px; border-radius: 50%;
@@ -350,6 +358,54 @@
   .next-action-text { color: var(--text-primary); font-weight: 500; }
   .next-action-foot { display: flex; align-items: center; justify-content: space-between;
                       margin-top: 8px; font-size: 12px; color: var(--text-muted); }
+
+  /* ─────────  data page (sheet import)  ───────── */
+  .data-grid { display: grid; gap: 24px; max-width: 760px; }
+  .data-card {
+    background: var(--bg-raised); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 20px 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .data-card h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600;
+                  color: var(--text-primary); }
+  .data-card p.lede { margin: 0 0 16px; font-size: 13px; color: var(--text-muted); }
+  .form-row { display: grid; gap: 6px; margin-bottom: 12px; }
+  .form-row label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .form-row input, .form-row select {
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    background: var(--bg-base); border: 1px solid var(--border);
+    color: var(--text-primary);
+    transition: border-color 80ms;
+  }
+  .form-row input:focus, .form-row select:focus {
+    outline: none; border-color: var(--accent);
+  }
+  .form-row .hint-text { font-size: 11px; color: var(--text-subtle); }
+  .form-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .schema-table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    margin-top: 8px;
+  }
+  .schema-table th, .schema-table td {
+    text-align: left; padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .schema-table th { color: var(--text-muted); font-weight: 500; }
+  .schema-table code {
+    background: var(--bg-sunken); padding: 1px 6px; border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; color: var(--text-primary);
+  }
+  .toast {
+    margin-top: 12px; padding: 10px 12px; border-radius: var(--radius-sm);
+    font-size: 13px;
+  }
+  .toast.ok    { background: var(--accent-soft); color: var(--accent); }
+  .toast.err   { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+  @media (prefers-color-scheme: dark) {
+    .toast.err { background: #450a0a; border-color: #7f1d1d; color: #fca5a5; }
+  }
+
   .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin: 16px 0; }
   .tab {
     padding: 8px 12px; color: var(--text-muted); font-weight: 500; font-size: 13px;
@@ -419,6 +475,7 @@
     </button>
     <div class="nav-spacer"></div>
     <div class="nav-section">Setup</div>
+    <button class="nav-item" data-page="data"><span>⤓ Data sources</span></button>
     <button class="nav-item"><span>⚙ Settings</span></button>
   </aside>
 
@@ -430,8 +487,9 @@
         <span style="flex:1">Search leads, companies, notes…</span>
         <span class="kbd">⌘K</span>
       </div>
-      <div class="sync">
-        <span class="sync-dot"></span> synced 2 min ago
+      <div class="sync" id="sync-pill" title="Click to open data sources">
+        <span class="sync-dot" id="sync-dot"></span>
+        <span id="sync-text">no source connected</span>
       </div>
       <div class="avatar">A</div>
     </header>
@@ -444,129 +502,57 @@
         <div class="page-header">
           <div>
             <h1 class="page-title">Today</h1>
-            <span class="page-sub">Tuesday, May 5</span>
+            <span class="page-sub" id="today-date"></span>
           </div>
           <button class="btn btn-primary">+ New lead <span class="kbd" style="background:rgba(255,255,255,.15);border-color:transparent;color:white">N</span></button>
         </div>
 
         <!-- hero next-action -->
-        <div class="hero">
+        <div class="hero" id="hero">
           <div>
-            <div class="hero-meta">
-              <span class="pulse"></span> Next up · in 24 minutes
-            </div>
-            <h2 class="hero-title">Discovery call — Acme Corp</h2>
-            <div class="hero-sub">Jane Doe, VP Sales · 30 min · 9:30 AM</div>
-            <div class="hero-tags">
-              <span><span class="stage-dot" style="background:var(--stage-discovery)"></span><strong>Discovery</strong></span>
-              <span>Value: <strong>$24,000</strong></span>
-              <span>Source: <strong>Referral</strong></span>
-            </div>
+            <div class="hero-meta"><span class="pulse"></span> <span id="hero-when">Next up</span></div>
+            <h2 class="hero-title" id="hero-title">—</h2>
+            <div class="hero-sub" id="hero-sub">—</div>
+            <div class="hero-tags" id="hero-tags"></div>
           </div>
           <div class="hero-actions">
-            <button class="btn btn-primary" onclick="openDrawer()">Open lead</button>
+            <button class="btn btn-primary" id="hero-open">Open lead</button>
             <button class="btn">Join Meet ↗</button>
           </div>
         </div>
 
         <!-- follow-ups -->
         <div class="section-label">
-          Follow-ups due today <span class="count">4</span>
+          Follow-ups due today <span class="count" id="tasks-count">0</span>
           <span class="right"><button class="btn">View all</button></span>
         </div>
-        <div class="card" id="tasks">
-          <div class="row" data-task>
-            <button class="check" onclick="toggleTask(this)"></button>
-            <div>
-              <div class="row-title">Call back Mark @ Initech</div>
-              <div class="row-meta"><span class="stage-dot" style="background:var(--stage-qualified)"></span>Qualified · $8k</div>
-            </div>
-            <div class="row-time num">2:00 PM</div>
-            <div class="row-time">⋯</div>
-          </div>
-          <div class="row" data-task>
-            <button class="check" onclick="toggleTask(this)"></button>
-            <div>
-              <div class="row-title">Send proposal to Globex</div>
-              <div class="row-meta"><span class="stage-dot" style="background:var(--stage-proposal)"></span>Proposal · $42k</div>
-            </div>
-            <div class="row-time">—</div>
-            <div class="row-time">⋯</div>
-          </div>
-          <div class="row" data-task>
-            <button class="check" onclick="toggleTask(this)"></button>
-            <div>
-              <div class="row-title">Check in: Hooli (no reply 5d)</div>
-              <div class="row-meta"><span class="stage-dot" style="background:var(--stage-discovery)"></span>Discovery · $15k</div>
-            </div>
-            <div class="row-time">—</div>
-            <div class="row-time">⋯</div>
-          </div>
-          <div class="row" data-task>
-            <button class="check" onclick="toggleTask(this)"></button>
-            <div>
-              <div class="row-title">LinkedIn DM Sara @ Umbrella</div>
-              <div class="row-meta"><span class="stage-dot" style="background:var(--stage-new)"></span>New · —</div>
-            </div>
-            <div class="row-time">—</div>
-            <div class="row-time">⋯</div>
-          </div>
-        </div>
+        <div class="card" id="tasks"></div>
 
         <!-- stale -->
         <div class="section-label">
-          Stale leads <span class="count">3 · no activity 7+ days</span>
+          Stale leads <span class="count" id="stale-count">0 · no activity 7+ days</span>
           <span class="right"><button class="btn">View all</button></span>
         </div>
-        <div class="card">
-          <div class="row">
-            <span style="color:var(--warn)">⏳</span>
-            <div>
-              <div class="row-title">Wayne Enterprises</div>
-              <div class="row-meta"><span class="stage-dot" style="background:var(--stage-discovery)"></span>Discovery · $30k</div>
-            </div>
-            <div class="row-time" style="color:var(--warn)">11d quiet</div>
-            <div class="row-time">⋯</div>
-          </div>
-          <div class="row">
-            <span style="color:var(--warn)">⏳</span>
-            <div>
-              <div class="row-title">Stark Industries</div>
-              <div class="row-meta"><span class="stage-dot" style="background:var(--stage-proposal)"></span>Proposal · $55k</div>
-            </div>
-            <div class="row-time" style="color:var(--warn)">9d quiet</div>
-            <div class="row-time">⋯</div>
-          </div>
-          <div class="row">
-            <span style="color:var(--warn)">⏳</span>
-            <div>
-              <div class="row-title">Pied Piper</div>
-              <div class="row-meta"><span class="stage-dot" style="background:var(--stage-qualified)"></span>Qualified · $12k</div>
-            </div>
-            <div class="row-time" style="color:var(--warn)">8d quiet</div>
-            <div class="row-time">⋯</div>
-          </div>
-        </div>
+        <div class="card" id="stale"></div>
 
         <!-- kpis -->
         <div class="section-label">Today at a glance</div>
         <div class="kpis">
           <div class="kpi">
-            <div class="kpi-label">Meetings</div>
-            <div class="kpi-value num">3</div>
+            <div class="kpi-label">Open leads</div>
+            <div class="kpi-value num" id="kpi-leads">0</div>
           </div>
           <div class="kpi">
             <div class="kpi-label">Tasks done</div>
-            <div class="kpi-value num">2 / 6</div>
+            <div class="kpi-value num" id="kpi-tasks">0 / 0</div>
           </div>
           <div class="kpi">
             <div class="kpi-label">Pipeline open</div>
-            <div class="kpi-value num">$312k</div>
+            <div class="kpi-value num" id="kpi-pipeline">$0</div>
           </div>
           <div class="kpi">
-            <div class="kpi-label">Activities vs last week</div>
-            <div class="kpi-value num">+8%</div>
-            <div class="kpi-trend">▲ on pace</div>
+            <div class="kpi-label">Won this period</div>
+            <div class="kpi-value num" id="kpi-won">$0</div>
           </div>
         </div>
       </section>
@@ -580,88 +566,93 @@
           </div>
           <button class="btn btn-primary">+ New lead</button>
         </div>
+        <div class="kanban" id="kanban"></div>
+      </section>
 
-        <div class="kanban">
-          <div class="col">
-            <div class="col-head">
-              <div class="col-name" style="color:var(--stage-new)">New</div>
-              <div class="col-total num">12 · $48k</div>
-            </div>
-            <div class="deal" onclick="openDrawer()">
-              <div class="deal-head"><div class="deal-co">Acme Corp</div><div class="score hot"></div></div>
-              <div class="deal-person">Jane Doe</div>
-              <div class="deal-foot"><span class="deal-val num">$24k</span><span class="deal-next">▶ Call</span></div>
-            </div>
-            <div class="deal">
-              <div class="deal-head"><div class="deal-co">Umbrella</div><div class="score warm"></div></div>
-              <div class="deal-person">Sara Tate</div>
-              <div class="deal-foot"><span class="deal-val">—</span><span class="deal-next">▶ DM</span></div>
-            </div>
+      <!-- ─────  DATA SOURCES PAGE  ───── -->
+      <section class="page" id="page-data">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Data sources</h1>
+            <span class="page-sub">Pull leads & tasks straight from a Google Sheet</span>
           </div>
-          <div class="col">
-            <div class="col-head">
-              <div class="col-name" style="color:var(--stage-discovery)">Discovery</div>
-              <div class="col-total num">8 · $124k</div>
+          <button class="btn" id="clear-data">Disconnect</button>
+        </div>
+
+        <div class="data-grid">
+
+          <div class="data-card">
+            <h3>Google Sheet — Leads</h3>
+            <p class="lede">
+              Paste your sheet URL (or just the sheet ID) and the tab name.
+              The sheet must be shared as <strong>Anyone with the link → Viewer</strong>
+              for the browser to read it without a sign-in.
+            </p>
+
+            <div class="form-row">
+              <label for="leads-url">Sheet URL or ID</label>
+              <input type="text" id="leads-url"
+                     placeholder="https://docs.google.com/spreadsheets/d/abc123…/edit" />
             </div>
-            <div class="deal">
-              <div class="deal-head"><div class="deal-co">Hooli</div><div class="score warm"></div></div>
-              <div class="deal-person">T. Bradshaw</div>
-              <div class="deal-foot"><span class="deal-val num">$15k</span><span class="deal-next" style="color:var(--warn)">⏳ 11d</span></div>
+            <div class="form-row">
+              <label for="leads-tab">Tab name</label>
+              <input type="text" id="leads-tab" placeholder="Leads" />
+              <span class="hint-text">Leave blank to use the first tab.</span>
             </div>
-            <div class="deal">
-              <div class="deal-head"><div class="deal-co">Wayne Ent.</div><div class="score warm"></div></div>
-              <div class="deal-person">Bruce Wayne</div>
-              <div class="deal-foot"><span class="deal-val num">$30k</span><span class="deal-next">▶ Email</span></div>
+
+            <h3 style="margin-top:16px">Google Sheet — Tasks <span style="color:var(--text-subtle);font-weight:400">(optional)</span></h3>
+            <p class="lede">If omitted, the Today list is derived from each lead's "Next action" + "Next action date".</p>
+            <div class="form-row">
+              <label for="tasks-url">Sheet URL or ID</label>
+              <input type="text" id="tasks-url" placeholder="(optional)" />
             </div>
+            <div class="form-row">
+              <label for="tasks-tab">Tab name</label>
+              <input type="text" id="tasks-tab" placeholder="Tasks" />
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" id="sync-now">Sync now</button>
+              <button class="btn" id="save-only">Save config</button>
+              <button class="btn" id="reset-seed">Restore demo data</button>
+            </div>
+            <div id="sync-toast"></div>
           </div>
-          <div class="col">
-            <div class="col-head">
-              <div class="col-name" style="color:var(--stage-qualified)">Qualified</div>
-              <div class="col-total num">5 · $98k</div>
-            </div>
-            <div class="deal">
-              <div class="deal-head"><div class="deal-co">Initech</div><div class="score hot"></div></div>
-              <div class="deal-person">Mark Roberts</div>
-              <div class="deal-foot"><span class="deal-val num">$8k</span><span class="deal-next">▶ Call 2pm</span></div>
-            </div>
-            <div class="deal">
-              <div class="deal-head"><div class="deal-co">Stark Ind.</div><div class="score warm"></div></div>
-              <div class="deal-person">Tony Stark</div>
-              <div class="deal-foot"><span class="deal-val num">$55k</span><span class="deal-next">▶ Demo</span></div>
-            </div>
+
+          <div class="data-card">
+            <h3>Expected columns — <code>Leads</code> tab</h3>
+            <p class="lede">Match column headers (case-insensitive, spaces or underscores both work). Extra columns are ignored.</p>
+            <table class="schema-table">
+              <thead><tr><th>Header</th><th>Type</th><th>Notes</th></tr></thead>
+              <tbody>
+                <tr><td><code>Company</code></td><td>text</td><td>Required.</td></tr>
+                <tr><td><code>Contact</code></td><td>text</td><td>Person name.</td></tr>
+                <tr><td><code>Title</code></td><td>text</td><td>e.g. "VP Sales".</td></tr>
+                <tr><td><code>Email</code></td><td>text</td><td></td></tr>
+                <tr><td><code>Phone</code></td><td>text</td><td></td></tr>
+                <tr><td><code>Stage</code></td><td>text</td><td>One of: New, Discovery, Qualified, Proposal, Won, Lost.</td></tr>
+                <tr><td><code>Value</code></td><td>number</td><td>Deal size, in dollars.</td></tr>
+                <tr><td><code>Source</code></td><td>text</td><td>e.g. Referral, Inbound.</td></tr>
+                <tr><td><code>Score</code></td><td>number</td><td>0–100. Drives hot/warm/cold dot.</td></tr>
+                <tr><td><code>Next action</code></td><td>text</td><td>Short verb phrase.</td></tr>
+                <tr><td><code>Next action date</code></td><td>date</td><td>Drives the Today hero + tasks.</td></tr>
+                <tr><td><code>Last activity</code></td><td>date</td><td>Drives "stale" detection.</td></tr>
+                <tr><td><code>Notes</code></td><td>text</td><td>Free-form.</td></tr>
+              </tbody>
+            </table>
+            <h3 style="margin-top:20px">Expected columns — <code>Tasks</code> tab</h3>
+            <table class="schema-table">
+              <tbody>
+                <tr><td><code>Title</code></td><td>text</td><td>Required.</td></tr>
+                <tr><td><code>Company</code></td><td>text</td><td>Joins to a lead by name.</td></tr>
+                <tr><td><code>Stage</code></td><td>text</td><td>Override; defaults to the lead's stage.</td></tr>
+                <tr><td><code>Value</code></td><td>number</td><td>Override; defaults to the lead's value.</td></tr>
+                <tr><td><code>Due</code></td><td>date</td><td>Date or datetime.</td></tr>
+                <tr><td><code>Done</code></td><td>boolean</td><td>TRUE / FALSE.</td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="col">
-            <div class="col-head">
-              <div class="col-name" style="color:var(--stage-proposal)">Proposal</div>
-              <div class="col-total num">4 · $186k</div>
-            </div>
-            <div class="deal">
-              <div class="deal-head"><div class="deal-co">Globex</div><div class="score hot"></div></div>
-              <div class="deal-person">Sara Kim</div>
-              <div class="deal-foot"><span class="deal-val num">$42k</span><span class="deal-next">▶ Send</span></div>
-            </div>
-            <div class="deal">
-              <div class="deal-head"><div class="deal-co">Pied Piper</div><div class="score hot"></div></div>
-              <div class="deal-person">R. Hendricks</div>
-              <div class="deal-foot"><span class="deal-val num">$12k</span><span class="deal-next">▶ Sign</span></div>
-            </div>
-          </div>
-          <div class="col">
-            <div class="col-head">
-              <div class="col-name" style="color:var(--stage-won)">Won</div>
-              <div class="col-total num">2 · $67k</div>
-            </div>
-            <div class="deal" style="opacity:.7">
-              <div class="deal-head"><div class="deal-co">Soylent</div><div class="score" style="background:var(--accent)"></div></div>
-              <div class="deal-person">✓ won May 2</div>
-              <div class="deal-foot"><span class="deal-val num">$30k</span><span class="deal-next">—</span></div>
-            </div>
-            <div class="deal" style="opacity:.7">
-              <div class="deal-head"><div class="deal-co">Cyberdyne</div><div class="score" style="background:var(--accent)"></div></div>
-              <div class="deal-person">✓ won Apr 28</div>
-              <div class="deal-foot"><span class="deal-val num">$37k</span><span class="deal-next">—</span></div>
-            </div>
-          </div>
+
         </div>
       </section>
 
@@ -674,62 +665,12 @@
 <aside class="drawer" id="drawer">
   <div class="drawer-head">
     <div class="drawer-top">
-      <h2 class="drawer-title">Acme Corp · Jane Doe</h2>
+      <h2 class="drawer-title" id="dr-title">—</h2>
       <button class="drawer-close" onclick="closeDrawer()">✕ <span class="kbd">Esc</span></button>
     </div>
-    <div class="drawer-sub">VP Sales · jane@acme.com · (555) 010-2244</div>
+    <div class="drawer-sub" id="dr-sub">—</div>
   </div>
-  <div class="drawer-body">
-    <div class="field-row">
-      <div class="field-label">Stage</div>
-      <div class="field-val"><span class="stage-dot" style="background:var(--stage-discovery)"></span>Discovery</div>
-    </div>
-    <div class="field-row">
-      <div class="field-label">Value</div>
-      <div class="field-val num">$24,000</div>
-    </div>
-    <div class="field-row">
-      <div class="field-label">Source</div>
-      <div class="field-val">Referral · Bruce W.</div>
-    </div>
-    <div class="field-row">
-      <div class="field-label">Score</div>
-      <div class="field-val"><span class="score hot" style="display:inline-block;margin-right:6px;vertical-align:middle"></span>78 / 100 — hot</div>
-    </div>
-
-    <div class="next-action">
-      <div class="next-action-label">Next action</div>
-      <div class="next-action-text">Call to confirm Q3 timeline</div>
-      <div class="next-action-foot">
-        <span>📅 Today, 2:00 PM</span>
-        <button class="btn" style="padding:3px 10px;font-size:12px">Mark done <span class="kbd">⌘D</span></button>
-      </div>
-    </div>
-
-    <div class="tabs">
-      <button class="tab active">Activity</button>
-      <button class="tab">Fields</button>
-      <button class="tab">History</button>
-      <button class="tab">Files</button>
-    </div>
-
-    <ul class="timeline">
-      <li class="tl-day">Today</li>
-      <li class="tl-item"><div class="tl-icon">📅</div><div class="tl-text"><strong>Discovery call</strong> · 30 min · 9:30 AM <span style="color:var(--text-muted)">— from Calendar</span></div></li>
-      <li class="tl-day">Yesterday</li>
-      <li class="tl-item"><div class="tl-icon">✉</div><div class="tl-text"><strong>Sent intro email</strong></div></li>
-      <li class="tl-item"><div class="tl-icon">📝</div><div class="tl-text">Note: <em>"Asked about SSO support"</em></div></li>
-      <li class="tl-day">May 1</li>
-      <li class="tl-item"><div class="tl-icon">✓</div><div class="tl-text"><strong>Task done:</strong> LinkedIn connect</div></li>
-    </ul>
-
-    <div class="log-bar">
-      <button class="btn">📞 Call <span class="kbd">C</span></button>
-      <button class="btn">✉ Email <span class="kbd">E</span></button>
-      <button class="btn">📅 Meet <span class="kbd">M</span></button>
-      <button class="btn">📝 Note <span class="kbd">.</span></button>
-    </div>
-  </div>
+  <div class="drawer-body" id="dr-body"></div>
 </aside>
 
 <!-- ─────────  flow hint footer  ───────── -->
@@ -742,47 +683,524 @@
 </div>
 
 <script>
-  // page switching
-  document.querySelectorAll('.nav-item[data-page]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      btn.classList.add('active');
-      const target = btn.dataset.page;
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById('page-' + target).classList.add('active');
+/* ════════════════════════════════════════════════════════════
+   Mazi prototype — Google Sheets data layer
+   ──────────────────────────────────────────────────────────── */
+
+/* ─────────  config + persistence  ───────── */
+const CONFIG_KEY = 'mazi.config.v1';
+const DATA_KEY   = 'mazi.data.v1';
+
+const loadConfig = () => { try { return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {}; } catch { return {}; } };
+const saveConfig = c  => localStorage.setItem(CONFIG_KEY, JSON.stringify(c));
+const loadData   = () => { try { return JSON.parse(localStorage.getItem(DATA_KEY)); } catch { return null; } };
+const saveData   = d  => localStorage.setItem(DATA_KEY, JSON.stringify(d));
+
+/* ─────────  seed (demo) data  ───────── */
+const SEED = {
+  source: 'demo',
+  syncedAt: new Date().toISOString(),
+  leads: [
+    {id:'l1', company:'Acme Corp',         contact:'Jane Doe',     title:'VP Sales', email:'jane@acme.com',  phone:'(555) 010-2244', stage:'Discovery', value:24000, source:'Referral · Bruce W.', score:78, nextAction:'Discovery call — confirm Q3 timeline', nextActionAt:'2026-05-05T09:30', lastActivityAt:'2026-05-04', notes:'Asked about SSO support'},
+    {id:'l2', company:'Umbrella',          contact:'Sara Tate',    title:'',         email:'',               phone:'',               stage:'New',       value:0,     source:'Outbound',           score:55, nextAction:'LinkedIn DM',        nextActionAt:'2026-05-05', lastActivityAt:'2026-05-03', notes:''},
+    {id:'l3', company:'Hooli',             contact:'T. Bradshaw',  title:'',         email:'',               phone:'',               stage:'Discovery', value:15000, source:'Inbound',            score:50, nextAction:'Check in — no reply 5d', nextActionAt:'2026-05-05', lastActivityAt:'2026-04-24', notes:''},
+    {id:'l4', company:'Wayne Enterprises', contact:'Bruce Wayne',  title:'',         email:'',               phone:'',               stage:'Discovery', value:30000, source:'Referral',           score:60, nextAction:'Email follow-up',     nextActionAt:'',           lastActivityAt:'2026-04-23', notes:''},
+    {id:'l5', company:'Initech',           contact:'Mark Roberts', title:'',         email:'',               phone:'',               stage:'Qualified', value:8000,  source:'Outbound',           score:80, nextAction:'Call back',           nextActionAt:'2026-05-05T14:00', lastActivityAt:'2026-05-02', notes:''},
+    {id:'l6', company:'Stark Industries',  contact:'Tony Stark',   title:'',         email:'',               phone:'',               stage:'Proposal',  value:55000, source:'Conference',         score:65, nextAction:'Demo',                nextActionAt:'',           lastActivityAt:'2026-04-25', notes:''},
+    {id:'l7', company:'Globex',            contact:'Sara Kim',     title:'',         email:'',               phone:'',               stage:'Proposal',  value:42000, source:'Inbound',            score:85, nextAction:'Send proposal',       nextActionAt:'2026-05-05', lastActivityAt:'2026-05-03', notes:''},
+    {id:'l8', company:'Pied Piper',        contact:'R. Hendricks', title:'',         email:'',               phone:'',               stage:'Qualified', value:12000, source:'Referral',           score:88, nextAction:'Sign',                nextActionAt:'',           lastActivityAt:'2026-04-26', notes:''},
+    {id:'l9', company:'Soylent',           contact:'',             title:'',         email:'',               phone:'',               stage:'Won',       value:30000, source:'Inbound',            score:100,nextAction:'',                    nextActionAt:'',           lastActivityAt:'2026-05-02', notes:''},
+    {id:'l10',company:'Cyberdyne',         contact:'',             title:'',         email:'',               phone:'',               stage:'Won',       value:37000, source:'Inbound',            score:100,nextAction:'',                    nextActionAt:'',           lastActivityAt:'2026-04-28', notes:''},
+  ],
+  tasks: null  // null → derive from leads
+};
+
+/* ─────────  in-memory state  ───────── */
+const state = {
+  config: loadConfig(),
+  data: loadData() || SEED,
+};
+
+/* ─────────  helpers  ───────── */
+const STAGES = ['New','Discovery','Qualified','Proposal','Won'];
+const stageColor = name => {
+  const n = (name||'').toLowerCase();
+  if (n === 'new')        return 'var(--stage-new)';
+  if (n === 'discovery')  return 'var(--stage-discovery)';
+  if (n === 'qualified')  return 'var(--stage-qualified)';
+  if (n === 'proposal')   return 'var(--stage-proposal)';
+  if (n === 'won')        return 'var(--stage-won)';
+  if (n === 'lost')       return 'var(--stage-lost)';
+  return 'var(--stage-new)';
+};
+const stageLabel = name => STAGES.find(s => s.toLowerCase() === (name||'').toLowerCase()) || (name || 'New');
+const fmtMoney = n => {
+  if (!n) return '—';
+  if (n >= 1000) return '$' + Math.round(n/1000) + 'k';
+  return '$' + n;
+};
+const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isSameDay = (a, b) => a && b && a.toDateString() === b.toDateString();
+const parseDate = v => {
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d) ? null : d;
+};
+const daysSince = iso => {
+  const d = parseDate(iso); if (!d) return Infinity;
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+};
+const fmtTime = iso => {
+  const d = parseDate(iso); if (!d) return '—';
+  return d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+};
+const fmtRelative = iso => {
+  const d = parseDate(iso); if (!d) return '';
+  const mins = Math.round((d - Date.now()) / 60000);
+  if (Math.abs(mins) < 60)  return mins >= 0 ? `in ${mins} min` : `${-mins} min ago`;
+  const hrs = Math.round(mins / 60);
+  if (Math.abs(hrs) < 48)  return hrs >= 0 ? `in ${hrs}h` : `${-hrs}h ago`;
+  const days = Math.round(hrs / 24);
+  return days >= 0 ? `in ${days}d` : `${-days}d ago`;
+};
+
+/* ─────────  Google Sheets client (gviz JSON, no API key)  ───────── */
+function extractSheetId(input) {
+  if (!input) return '';
+  const m = String(input).match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : String(input).trim();
+}
+const normKey = s => String(s || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
+async function fetchSheet(idOrUrl, tab) {
+  const id = extractSheetId(idOrUrl);
+  if (!id) throw new Error('Missing sheet URL or ID');
+  const params = new URLSearchParams({ tqx: 'out:json' });
+  if (tab) params.set('sheet', tab);
+  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?${params}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} — is the sheet shared with "Anyone with the link"?`);
+  const text = await res.text();
+  const m = text.match(/setResponse\(([\s\S]+?)\);?\s*$/);
+  if (!m) throw new Error('Unexpected response — sheet is likely not public.');
+  let payload;
+  try { payload = JSON.parse(m[1]); }
+  catch { throw new Error('Could not parse sheet response.'); }
+  if (payload.status === 'error') {
+    const msg = payload.errors && payload.errors[0] && (payload.errors[0].detailed_message || payload.errors[0].message);
+    throw new Error(msg || 'Sheet returned an error.');
+  }
+  const cols = (payload.table.cols || []).map(c => normKey(c.label || c.id));
+  return (payload.table.rows || []).map(r => {
+    const obj = {};
+    (r.c || []).forEach((cell, i) => {
+      const k = cols[i]; if (!k) return;
+      obj[k] = cell ? (cell.v ?? null) : null;
     });
+    return obj;
   });
+}
 
-  // drawer
-  function openDrawer() {
-    document.getElementById('mask').classList.add('open');
-    document.getElementById('drawer').classList.add('open');
+function pick(row, ...keys) {
+  for (const k of keys) {
+    const v = row[normKey(k)];
+    if (v !== undefined && v !== null && v !== '') return v;
   }
-  function closeDrawer() {
-    document.getElementById('mask').classList.remove('open');
-    document.getElementById('drawer').classList.remove('open');
-  }
-
-  // optimistic task toggle
-  function toggleTask(btn) {
-    const row = btn.closest('.row');
-    const done = btn.classList.toggle('done');
-    row.classList.toggle('done', done);
-    btn.innerHTML = done ? '✓' : '';
-  }
-
-  // keyboard
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeDrawer();
-    if ((e.metaKey || e.ctrlKey) && e.key === '1') {
-      e.preventDefault();
-      document.querySelector('.nav-item[data-page="today"]').click();
+  return null;
+}
+function gvizDate(v) {
+  if (v == null || v === '') return '';
+  if (typeof v === 'string') {
+    const m = v.match(/^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)$/);
+    if (m) {
+      const [,Y,Mo,D,h,mi,s] = m;
+      return new Date(+Y, +Mo, +D, +(h||0), +(mi||0), +(s||0)).toISOString();
     }
-    if ((e.metaKey || e.ctrlKey) && e.key === '2') {
-      e.preventDefault();
-      document.querySelector('.nav-item[data-page="pipeline"]').click();
+    const d = new Date(v);
+    return isNaN(d) ? v : d.toISOString();
+  }
+  if (v instanceof Date) return v.toISOString();
+  return String(v);
+}
+const mapLeadRow = row => ({
+  id:           pick(row, 'id') || (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)),
+  company:      pick(row, 'company', 'account', 'organization') || '',
+  contact:      pick(row, 'contact', 'name', 'person') || '',
+  title:        pick(row, 'title', 'role') || '',
+  email:        pick(row, 'email') || '',
+  phone:        pick(row, 'phone') || '',
+  stage:        stageLabel(pick(row, 'stage', 'status') || 'New'),
+  value:        Number(pick(row, 'value', 'amount', 'deal_size')) || 0,
+  source:       pick(row, 'source') || '',
+  score:        Number(pick(row, 'score')) || 0,
+  nextAction:   pick(row, 'next_action', 'nextaction', 'action') || '',
+  nextActionAt: gvizDate(pick(row, 'next_action_date', 'next_action_at', 'due', 'due_date')) || '',
+  lastActivityAt: gvizDate(pick(row, 'last_activity', 'last_activity_at', 'updated', 'updated_at')) || '',
+  notes:        pick(row, 'notes', 'note') || '',
+});
+const mapTaskRow = row => ({
+  id:      pick(row, 'id') || (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)),
+  title:   pick(row, 'title', 'task') || '',
+  company: pick(row, 'company', 'account') || '',
+  stage:   pick(row, 'stage') || '',
+  value:   Number(pick(row, 'value', 'amount')) || 0,
+  dueAt:   gvizDate(pick(row, 'due', 'due_date', 'date')) || '',
+  done:    String(pick(row, 'done', 'completed') ?? '').toLowerCase() === 'true',
+});
+
+async function syncFromSheets() {
+  const c = state.config;
+  if (!c.leadsUrl) throw new Error('Set a Leads sheet URL first.');
+  setSyncStatus('spin', 'syncing…');
+  try {
+    const leadRows = await fetchSheet(c.leadsUrl, c.leadsTab);
+    const leads = leadRows.map(mapLeadRow).filter(l => l.company);
+    let tasks = null;
+    if (c.tasksUrl) {
+      const taskRows = await fetchSheet(c.tasksUrl, c.tasksTab);
+      tasks = taskRows.map(mapTaskRow).filter(t => t.title);
     }
+    state.data = { source: 'sheet', syncedAt: new Date().toISOString(), leads, tasks };
+    saveData(state.data);
+    renderAll();
+    return state.data;
+  } catch (e) {
+    setSyncStatus('err', 'sync failed');
+    throw e;
+  }
+}
+
+/* ─────────  derived task list  ───────── */
+function effectiveTasks() {
+  if (state.data.tasks && state.data.tasks.length) {
+    return state.data.tasks.map(t => {
+      const lead = state.data.leads.find(l => l.company.toLowerCase() === (t.company||'').toLowerCase());
+      return {
+        ...t,
+        stage: t.stage || (lead && lead.stage) || '',
+        value: t.value || (lead && lead.value) || 0,
+        leadId: lead && lead.id,
+      };
+    });
+  }
+  // Derive from leads' next-action fields
+  return state.data.leads
+    .filter(l => l.nextAction)
+    .map(l => ({
+      id: 't-' + l.id,
+      title: l.nextAction,
+      company: l.company,
+      stage: l.stage,
+      value: l.value,
+      dueAt: l.nextActionAt,
+      done: false,
+      leadId: l.id,
+    }));
+}
+
+/* ─────────  rendering  ───────── */
+function renderAll() {
+  renderTopbar();
+  renderToday();
+  renderPipeline();
+}
+
+function renderTopbar() {
+  const d = state.data;
+  if (d.source === 'sheet') {
+    const ago = fmtRelative(d.syncedAt);
+    setSyncStatus('ok', `synced ${ago}`);
+  } else {
+    setSyncStatus('warn', 'demo data — connect a sheet');
+  }
+}
+
+function setSyncStatus(kind, text) {
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  if (!dot || !txt) return;
+  dot.className = 'sync-dot' + (kind === 'ok' ? '' : ' ' + kind);
+  txt.textContent = text;
+}
+
+function renderToday() {
+  // date label
+  const today = new Date();
+  document.getElementById('today-date').textContent =
+    today.toLocaleDateString([], {weekday:'long', month:'long', day:'numeric'});
+
+  // hero — soonest upcoming task today, else top-scoring open lead
+  const tasks = effectiveTasks();
+  const upcoming = tasks
+    .filter(t => !t.done && t.dueAt)
+    .map(t => ({...t, _at: parseDate(t.dueAt)}))
+    .filter(t => t._at)
+    .sort((a, b) => a._at - b._at);
+  let hero = upcoming[0];
+  let heroLead;
+  if (hero) {
+    heroLead = state.data.leads.find(l => l.id === hero.leadId);
+  } else {
+    heroLead = [...state.data.leads]
+      .filter(l => !['Won','Lost'].includes(l.stage))
+      .sort((a,b) => (b.score||0) - (a.score||0))[0];
+  }
+  if (heroLead) {
+    document.getElementById('hero-when').textContent =
+      hero ? `Next up · ${fmtRelative(hero.dueAt)}` : 'Top priority';
+    document.getElementById('hero-title').textContent =
+      hero ? `${hero.title} — ${heroLead.company}` : `${heroLead.nextAction || 'Reach out'} — ${heroLead.company}`;
+    const sub = [heroLead.contact, heroLead.title].filter(Boolean).join(', ');
+    const time = hero ? fmtTime(hero.dueAt) : '';
+    document.getElementById('hero-sub').textContent = sub + (time ? ` · ${time}` : '');
+    document.getElementById('hero-tags').innerHTML = `
+      <span><span class="stage-dot" style="background:${stageColor(heroLead.stage)}"></span><strong>${escapeHtml(heroLead.stage)}</strong></span>
+      <span>Value: <strong>${escapeHtml(fmtMoney(heroLead.value))}</strong></span>
+      ${heroLead.source ? `<span>Source: <strong>${escapeHtml(heroLead.source)}</strong></span>` : ''}
+    `;
+    document.getElementById('hero-open').onclick = () => openLead(heroLead.id);
+  } else {
+    document.getElementById('hero-when').textContent = 'Nothing scheduled';
+    document.getElementById('hero-title').textContent = 'No open leads';
+    document.getElementById('hero-sub').textContent = 'Add a lead to your sheet to get going.';
+    document.getElementById('hero-tags').innerHTML = '';
+    document.getElementById('hero-open').onclick = () => switchPage('data');
+  }
+
+  // tasks list
+  const today0 = new Date(); today0.setHours(0,0,0,0);
+  const dueToday = tasks.filter(t => {
+    if (t.done) return false;
+    const d = parseDate(t.dueAt);
+    return !d || isSameDay(d, today0) || d < new Date(today0.getTime() + 86400000);
   });
+  document.getElementById('tasks-count').textContent = dueToday.length;
+  document.getElementById('tasks').innerHTML = dueToday.length
+    ? dueToday.map(taskRow).join('')
+    : `<div class="row-empty">All caught up.</div>`;
+
+  // stale leads (no activity 7+ days, not won/lost)
+  const stale = state.data.leads
+    .filter(l => !['Won','Lost'].includes(l.stage))
+    .map(l => ({ l, days: daysSince(l.lastActivityAt) }))
+    .filter(x => x.days >= 7 && x.days !== Infinity)
+    .sort((a,b) => b.days - a.days)
+    .slice(0, 5);
+  document.getElementById('stale-count').textContent =
+    `${stale.length} · no activity 7+ days`;
+  document.getElementById('stale').innerHTML = stale.length
+    ? stale.map(({l, days}) => `
+      <div class="row" onclick="openLead('${l.id}')">
+        <span style="color:var(--warn)">⏳</span>
+        <div>
+          <div class="row-title">${escapeHtml(l.company)}</div>
+          <div class="row-meta"><span class="stage-dot" style="background:${stageColor(l.stage)}"></span>${escapeHtml(l.stage)} · ${escapeHtml(fmtMoney(l.value))}</div>
+        </div>
+        <div class="row-time" style="color:var(--warn)">${days}d quiet</div>
+        <div class="row-time">⋯</div>
+      </div>`).join('')
+    : `<div class="row-empty">Nothing stale. Nice.</div>`;
+
+  // KPIs
+  const open = state.data.leads.filter(l => !['Won','Lost'].includes(l.stage));
+  const won  = state.data.leads.filter(l => l.stage === 'Won');
+  const doneCount = tasks.filter(t => t.done).length;
+  document.getElementById('kpi-leads').textContent = open.length;
+  document.getElementById('kpi-tasks').textContent = `${doneCount} / ${tasks.length}`;
+  document.getElementById('kpi-pipeline').textContent = fmtMoney(open.reduce((s,l) => s + (l.value||0), 0));
+  document.getElementById('kpi-won').textContent = fmtMoney(won.reduce((s,l) => s + (l.value||0), 0));
+}
+
+function taskRow(t) {
+  const meta = [t.stage && `<span class="stage-dot" style="background:${stageColor(t.stage)}"></span>${escapeHtml(t.stage)}`,
+                t.value ? escapeHtml(fmtMoney(t.value)) : null,
+                t.company ? escapeHtml(t.company) : null]
+                .filter(Boolean).join(' · ');
+  const time = t.dueAt && parseDate(t.dueAt) && parseDate(t.dueAt).getHours() ? fmtTime(t.dueAt) : '—';
+  return `
+    <div class="row${t.done ? ' done' : ''}" data-task-id="${t.id}" onclick="if(event.target.closest('.check'))return; openLead('${t.leadId||''}')">
+      <button class="check${t.done ? ' done' : ''}" onclick="event.stopPropagation(); toggleTask('${t.id}')">${t.done ? '✓' : ''}</button>
+      <div>
+        <div class="row-title">${escapeHtml(t.title)}</div>
+        <div class="row-meta">${meta}</div>
+      </div>
+      <div class="row-time num">${time}</div>
+      <div class="row-time">⋯</div>
+    </div>`;
+}
+
+function toggleTask(id) {
+  if (state.data.tasks) {
+    const t = state.data.tasks.find(x => x.id === id);
+    if (t) { t.done = !t.done; saveData(state.data); }
+  } else {
+    // derived task — just flip the row visually; sheet is source-of-truth
+    const row = document.querySelector(`[data-task-id="${id}"]`);
+    if (row) {
+      const done = row.classList.toggle('done');
+      const c = row.querySelector('.check');
+      c.classList.toggle('done', done);
+      c.innerHTML = done ? '✓' : '';
+      return;
+    }
+  }
+  renderToday();
+}
+
+function renderPipeline() {
+  const byStage = Object.fromEntries(STAGES.map(s => [s, []]));
+  state.data.leads.forEach(l => {
+    const s = stageLabel(l.stage);
+    if (byStage[s]) byStage[s].push(l);
+  });
+  document.getElementById('kanban').innerHTML = STAGES.map(s => {
+    const deals = byStage[s];
+    const total = deals.reduce((sum, d) => sum + (d.value||0), 0);
+    return `
+      <div class="col">
+        <div class="col-head">
+          <div class="col-name" style="color:${stageColor(s)}">${s}</div>
+          <div class="col-total num">${deals.length} · ${fmtMoney(total)}</div>
+        </div>
+        ${deals.map(dealCard).join('') || '<div class="row-empty" style="padding:12px 4px">empty</div>'}
+      </div>`;
+  }).join('');
+}
+
+function dealCard(l) {
+  const heat = l.score >= 75 ? 'hot' : l.score >= 50 ? 'warm' : 'cold';
+  const stale = daysSince(l.lastActivityAt);
+  const next = stale >= 7
+    ? `<span style="color:var(--warn)">⏳ ${stale}d</span>`
+    : `<span class="deal-next">${l.nextAction ? '▶ ' + escapeHtml(l.nextAction.split(' ').slice(0,3).join(' ')) : '—'}</span>`;
+  return `
+    <div class="deal" onclick="openLead('${l.id}')">
+      <div class="deal-head"><div class="deal-co">${escapeHtml(l.company)}</div><div class="score ${heat}"></div></div>
+      <div class="deal-person">${escapeHtml(l.contact || '—')}</div>
+      <div class="deal-foot"><span class="deal-val num">${escapeHtml(fmtMoney(l.value))}</span>${next}</div>
+    </div>`;
+}
+
+/* ─────────  drawer  ───────── */
+function openLead(id) {
+  const l = state.data.leads.find(x => x.id === id);
+  if (!l) return;
+  document.getElementById('dr-title').textContent = `${l.company}${l.contact ? ' · ' + l.contact : ''}`;
+  document.getElementById('dr-sub').textContent = [l.title, l.email, l.phone].filter(Boolean).join(' · ') || '—';
+  document.getElementById('dr-body').innerHTML = `
+    <div class="field-row"><div class="field-label">Stage</div>
+      <div class="field-val"><span class="stage-dot" style="background:${stageColor(l.stage)}"></span>${escapeHtml(l.stage)}</div></div>
+    <div class="field-row"><div class="field-label">Value</div><div class="field-val num">${escapeHtml(fmtMoney(l.value))}</div></div>
+    ${l.source ? `<div class="field-row"><div class="field-label">Source</div><div class="field-val">${escapeHtml(l.source)}</div></div>` : ''}
+    ${l.score ? `<div class="field-row"><div class="field-label">Score</div>
+      <div class="field-val"><span class="score ${l.score>=75?'hot':l.score>=50?'warm':'cold'}" style="display:inline-block;margin-right:6px;vertical-align:middle"></span>${l.score} / 100</div></div>` : ''}
+    ${l.nextAction ? `
+    <div class="next-action">
+      <div class="next-action-label">Next action</div>
+      <div class="next-action-text">${escapeHtml(l.nextAction)}</div>
+      <div class="next-action-foot">
+        <span>📅 ${l.nextActionAt ? new Date(l.nextActionAt).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : 'unscheduled'}</span>
+        <button class="btn" style="padding:3px 10px;font-size:12px">Mark done <span class="kbd">⌘D</span></button>
+      </div>
+    </div>` : ''}
+    ${l.notes ? `<div class="field-row" style="grid-template-columns:80px 1fr;align-items:start"><div class="field-label">Notes</div><div class="field-val" style="font-weight:400;color:var(--text-body)">${escapeHtml(l.notes)}</div></div>` : ''}
+    <div class="log-bar">
+      <button class="btn">📞 Call <span class="kbd">C</span></button>
+      <button class="btn">✉ Email <span class="kbd">E</span></button>
+      <button class="btn">📅 Meet <span class="kbd">M</span></button>
+      <button class="btn">📝 Note <span class="kbd">.</span></button>
+    </div>`;
+  document.getElementById('mask').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('mask').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+}
+
+/* ─────────  data page wiring  ───────── */
+function bindDataPage() {
+  const c = state.config;
+  document.getElementById('leads-url').value = c.leadsUrl || '';
+  document.getElementById('leads-tab').value = c.leadsTab || '';
+  document.getElementById('tasks-url').value = c.tasksUrl || '';
+  document.getElementById('tasks-tab').value = c.tasksTab || '';
+
+  const readForm = () => ({
+    leadsUrl: document.getElementById('leads-url').value.trim(),
+    leadsTab: document.getElementById('leads-tab').value.trim(),
+    tasksUrl: document.getElementById('tasks-url').value.trim(),
+    tasksTab: document.getElementById('tasks-tab').value.trim(),
+  });
+  const toast = (kind, msg) => {
+    const el = document.getElementById('sync-toast');
+    el.className = 'toast ' + kind;
+    el.textContent = msg;
+  };
+
+  document.getElementById('save-only').onclick = () => {
+    state.config = readForm(); saveConfig(state.config);
+    toast('ok', 'Saved.');
+  };
+  document.getElementById('sync-now').onclick = async () => {
+    state.config = readForm(); saveConfig(state.config);
+    toast('ok', 'Syncing…');
+    try {
+      const data = await syncFromSheets();
+      toast('ok', `Loaded ${data.leads.length} leads${data.tasks ? ' + ' + data.tasks.length + ' tasks' : ''}.`);
+    } catch (e) {
+      toast('err', e.message || String(e));
+    }
+  };
+  document.getElementById('reset-seed').onclick = () => {
+    state.data = { ...SEED, syncedAt: new Date().toISOString() };
+    saveData(state.data); renderAll();
+    toast('ok', 'Demo data restored.');
+  };
+  document.getElementById('clear-data').onclick = () => {
+    if (!confirm('Disconnect the sheet and clear cached data?')) return;
+    localStorage.removeItem(CONFIG_KEY);
+    localStorage.removeItem(DATA_KEY);
+    state.config = {}; state.data = SEED;
+    document.getElementById('leads-url').value = '';
+    document.getElementById('leads-tab').value = '';
+    document.getElementById('tasks-url').value = '';
+    document.getElementById('tasks-tab').value = '';
+    toast('ok', 'Disconnected. Demo data restored.');
+    renderAll();
+  };
+}
+
+/* ─────────  page switching  ───────── */
+function switchPage(target) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navBtn = document.querySelector(`.nav-item[data-page="${target}"]`);
+  if (navBtn) navBtn.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + target);
+  if (page) page.classList.add('active');
+}
+document.querySelectorAll('.nav-item[data-page]').forEach(btn => {
+  btn.addEventListener('click', () => switchPage(btn.dataset.page));
+});
+document.getElementById('sync-pill').addEventListener('click', () => switchPage('data'));
+
+/* ─────────  keyboard  ───────── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDrawer();
+  if ((e.metaKey || e.ctrlKey) && e.key === '1') { e.preventDefault(); switchPage('today'); }
+  if ((e.metaKey || e.ctrlKey) && e.key === '2') { e.preventDefault(); switchPage('pipeline'); }
+});
+
+/* ─────────  boot  ───────── */
+bindDataPage();
+renderAll();
+// auto-refresh sync timestamp every minute
+setInterval(renderTopbar, 60_000);
+// auto-sync on open if a sheet is configured
+if (state.config.leadsUrl) {
+  syncFromSheets().catch(err => console.warn('Auto-sync failed:', err.message));
+}
 </script>
 </body>
 </html>
